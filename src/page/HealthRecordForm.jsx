@@ -139,15 +139,26 @@ const HealthRecordForm = () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error);
             
+            const heartRate = data.heart_rate;
+            const bloodOxygen = data.blood_oxygen;
+            
+            // Estimate Systolic Blood Pressure (SBP)
+            const systolicBP = 50 + (0.5 * heartRate) + (0.2 * bloodOxygen);
+            
+            // Estimate Diastolic Blood Pressure (DBP)
+            const diastolicBP = systolicBP - (heartRate / 2);
+            
             setFormData((prevData) => ({
                 ...prevData,
-                heart_rate: data.heart_rate,
-                blood_oxygen: data.blood_oxygen,
+                heart_rate: heartRate,
+                blood_oxygen: bloodOxygen,
+                blood_pressure: `${Math.round(systolicBP)}/${Math.round(diastolicBP)}`,
             }));
         } catch (error) {
             alert(`Error fetching vitals: ${error.message}`);
         }
     };
+    
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">

@@ -7,6 +7,7 @@ const RecordPage = () => {
     const { personId } = useParams();
     const [record, setRecord] = useState({});
     const [person, setPerson] = useState(null);
+    const [fitToEnroll, setFitToEnroll] = useState(true);
 
     useEffect(() => {
         fetch(`https://health-records.netlify.app/api/person/get_records`)
@@ -15,6 +16,21 @@ const RecordPage = () => {
                 const dataMap = Object.fromEntries(data.map(item => [item.id, item]));
                 const result = dataMap[recordId] || null;
                 setRecord(result);
+                const weight = record.weight_kg;
+                const heightCm = record.height_cm;
+
+                // Calculate BMI
+                const heightM = heightCm / 100; // convert cm to meters
+                const bmi = weight / (heightM * heightM);
+
+                console.log('BMI:', bmi.toFixed(2)); // optional: for debugging
+
+                // Check WHO standards
+                if (bmi < 16 || bmi > 29.9) {
+                    setFitToEnroll(false);
+                } else {
+                    setFitToEnroll(true);
+                }
             })
             .catch((err) => console.error(err));
 
@@ -30,10 +46,19 @@ const RecordPage = () => {
         
     }, [recordId, personId]);
 
+
+
     return (
         <div className="min-h-screen bg-gray-100 pb-8 px-4">
             <Navbar />
-            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-4xl mx-auto">
+            <div className="relative bg-white shadow-lg rounded-lg p-8 w-full max-w-4xl mx-auto">
+                {
+                    fitToEnroll ? (
+                        <p className="absolute top-25 font-bold right-15 text-4xl text-green-600 rotate-45">FIT TO ENROLL</p>
+                    ) : (
+                        <p className="absolute top-25 font-bold right-15 text-4xl text-red-600 rotate-45">NOT FIT TO ENROLL</p>
+                    )
+                }
                 <h1 className="text-3xl font-semibold text-gray-800 mb-6">Records for Person ID: {record.person_id}</h1>
 
                 {person ? (
